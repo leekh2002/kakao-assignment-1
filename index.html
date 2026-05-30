@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Todo App</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="app-container">
+      <section class="todo-app" aria-labelledby="app-title">
+        <div class="app-header">
+          <p class="app-label">Productivity</p>
+          <h1 id="app-title">Todo App</h1>
+        </div>
+
+        <div class="date-navigation" aria-label="일간 Todo 날짜 선택">
+          <button type="button" class="date-button" id="previous-date-button">
+            이전
+          </button>
+          <p class="selected-date" id="selected-date"></p>
+          <button type="button" class="date-button" id="next-date-button">
+            다음
+          </button>
+        </div>
+
+        <form class="todo-form" id="todo-form">
+          <label class="sr-only" for="todo-input">할 일 입력</label>
+          <input
+            type="text"
+            id="todo-input"
+            class="todo-input"
+            placeholder="오늘 할 일을 입력하세요"
+            autocomplete="off"
+          />
+          <button type="submit" class="primary-button">추가</button>
+        </form>
+
+        <p class="message" id="message" role="alert" aria-live="polite"></p>
+
+        <div class="filter-tabs" role="tablist" aria-label="Todo 상태 필터">
+          <button
+            type="button"
+            class="filter-tab active"
+            data-filter="all"
+            role="tab"
+            aria-selected="true"
+          >
+            전체
+          </button>
+          <button
+            type="button"
+            class="filter-tab"
+            data-filter="active"
+            role="tab"
+            aria-selected="false"
+          >
+            진행 중
+          </button>
+          <button
+            type="button"
+            class="filter-tab"
+            data-filter="completed"
+            role="tab"
+            aria-selected="false"
+          >
+            완료
+          </button>
+        </div>
+
+        <ul class="todo-list" id="todo-list" aria-label="할 일 목록"></ul>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
