@@ -6,8 +6,9 @@ const filterTabs = document.querySelectorAll(".filter-tab");
 const selectedDateText = document.querySelector("#selected-date");
 const previousDateButton = document.querySelector("#previous-date-button");
 const nextDateButton = document.querySelector("#next-date-button");
+const TODO_STORAGE_KEY = "dailyTodoList";
 
-let todos = [];
+let todos = loadTodosFromLocalStorage();
 let editingTodoId = null;
 let currentFilter = "all";
 let selectedDate = createDateKey(new Date());
@@ -15,6 +16,22 @@ let selectedDate = createDateKey(new Date());
 // 현재 시간을 기반으로 각 Todo를 구분할 고유 id를 만듭니다.
 function createTodoId() {
   return Date.now();
+}
+
+// Todo 배열을 JSON 문자열로 변환해 로컬스토리지에 저장합니다.
+function saveTodosToLocalStorage() {
+  localStorage.setItem(TODO_STORAGE_KEY, JSON.stringify(todos));
+}
+
+// 로컬스토리지에 저장된 JSON 문자열을 Todo 배열로 복원합니다.
+function loadTodosFromLocalStorage() {
+  const savedTodos = localStorage.getItem(TODO_STORAGE_KEY);
+
+  if (savedTodos === null) {
+    return [];
+  }
+
+  return JSON.parse(savedTodos);
 }
 
 // Date 객체를 Todo 저장과 비교에 사용할 YYYY-MM-DD 형식 문자열로 변환합니다.
@@ -106,6 +123,7 @@ function createTodo(todoText) {
   };
 
   todos.push(newTodo);
+  saveTodosToLocalStorage();
   renderTodos();
 }
 
@@ -122,6 +140,7 @@ function updateTodo(todoId, nextText) {
     return todo;
   });
 
+  saveTodosToLocalStorage();
   renderTodos();
 }
 
@@ -167,6 +186,7 @@ function toggleTodoComplete(todoId) {
     return todo;
   });
 
+  saveTodosToLocalStorage();
   renderTodos();
 }
 
@@ -178,6 +198,7 @@ function deleteTodo(todoId) {
     editingTodoId = null;
   }
 
+  saveTodosToLocalStorage();
   renderTodos();
 }
 
