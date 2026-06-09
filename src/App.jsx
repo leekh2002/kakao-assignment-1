@@ -5,6 +5,7 @@ import TodoForm from './components/TodoForm'
 import TodoList from './components/TodoList'
 
 const TODO_STORAGE_KEY = 'dailyTodoList'
+const SELECTED_DATE_STORAGE_KEY = 'dailyTodoSelectedDate'
 
 function createDateKey(date) {
   const year = date.getFullYear()
@@ -20,6 +21,27 @@ function createDateFromKey(dateKey) {
   return new Date(year, month - 1, day)
 }
 
+function getMondayOfSelectedWeek(dateKey) {
+  const date = createDateFromKey(dateKey)
+  const day = date.getDay()
+  const mondayOffset = day === 0 ? -6 : 1 - day
+
+  date.setDate(date.getDate() + mondayOffset)
+
+  return date
+}
+
+function getWeekDateKeys(dateKey) {
+  const monday = getMondayOfSelectedWeek(dateKey)
+
+  return Array.from({ length: 7 }, (_, dayIndex) => {
+    const weekDate = new Date(monday)
+    weekDate.setDate(monday.getDate() + dayIndex)
+
+    return createDateKey(weekDate)
+  })
+}
+
 function loadTodosFromLocalStorage() {
   const savedTodos = localStorage.getItem(TODO_STORAGE_KEY)
 
@@ -31,23 +53,37 @@ function loadTodosFromLocalStorage() {
   return JSON.parse(savedTodos)
 }
 
+function loadSelectedDateFromLocalStorage() {
+  const savedSelectedDate = localStorage.getItem(SELECTED_DATE_STORAGE_KEY)
+
+  return savedSelectedDate ?? createDateKey(new Date())
+}
+
 function App() {
   const [todos, setTodos] = useState(loadTodosFromLocalStorage)
   const [editingTodoId, setEditingTodoId] = useState(null)
   const [validationMessage, setValidationMessage] = useState('')
   const [selectedFilter, setSelectedFilter] = useState('all')
-  const [selectedDate, setSelectedDate] = useState(() => createDateKey(new Date()))
+  const [selectedDate, setSelectedDate] = useState(loadSelectedDateFromLocalStorage)
 
   useEffect(() => {
     // todos가 추가, 수정, 삭제, 완료 처리로 바뀔 때마다 JSON 문자열로 저장합니다.
     localStorage.setItem(TODO_STORAGE_KEY, JSON.stringify(todos))
   }, [todos])
 
+  useEffect(() => {
+    // 선택된 날짜를 저장해 새로고침 후에도 같은 주간 뷰를 복원합니다.
+    localStorage.setItem(SELECTED_DATE_STORAGE_KEY, selectedDate)
+  }, [selectedDate])
+
+  const weekDateSummaries = getWeekDateKeys(selectedDate).map((dateKey) => ({
+    dateKey,
+    todoCount: todos.filter((todo) => todo.date === dateKey).length,
+  }))
+
   // 선택된 날짜를 먼저 맞춘 뒤, 선택된 상태 필터까지 적용한 Todo만 화면에 전달합니다.
   const filteredTodos = todos.filter((todo) => {
-    const isTodoOnSelectedDate = todo.date === selectedDate
-
-    if (!isTodoOnSelectedDate) {
+    if (todo.date !== selectedDate) {
       return false
     }
 
@@ -139,14 +175,21 @@ function App() {
     setValidationMessage('')
   }
 
-  function handleMoveSelectedDate(dayOffset) {
-    // 현재 선택된 날짜에 일 단위 offset을 더해 이전/다음 날짜로 이동합니다.
+  function handleMoveSelectedWeek(weekOffset) {
+    // 현재 선택된 날짜를 기준으로 이전 주차 또는 다음 주차로 이동합니다.
     setSelectedDate((currentSelectedDate) => {
       const nextDate = createDateFromKey(currentSelectedDate)
-      nextDate.setDate(nextDate.getDate() + dayOffset)
+      nextDate.setDate(nextDate.getDate() + weekOffset * 7)
 
       return createDateKey(nextDate)
     })
+    setEditingTodoId(null)
+    setValidationMessage('')
+  }
+
+  function handleSelectDate(nextSelectedDate) {
+    // 주간 날짜 버튼을 클릭하면 해당 날짜의 Todo만 보이도록 선택 날짜를 바꿉니다.
+    setSelectedDate(nextSelectedDate)
     setEditingTodoId(null)
     setValidationMessage('')
   }
@@ -164,7 +207,12 @@ function App() {
           </h1>
         </header>
 
-        <TodoDateNavigation selectedDate={selectedDate} onMoveSelectedDate={handleMoveSelectedDate} />
+        <TodoDateNavigation
+          selectedDate={selectedDate}
+          weekDateSummaries={weekDateSummaries}
+          onMoveSelectedWeek={handleMoveSelectedWeek}
+          onSelectDate={handleSelectDate}
+        />
 
         <TodoForm onAddTodo={handleAddTodo} validationMessage={validationMessage} />
 
