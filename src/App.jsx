@@ -1,8 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import TodoDateNavigation from './components/TodoDateNavigation'
 import TodoFilterTabs from './components/TodoFilterTabs'
 import TodoForm from './components/TodoForm'
 import TodoList from './components/TodoList'
+
+const TODO_STORAGE_KEY = 'dailyTodoList'
 
 function createDateKey(date) {
   const year = date.getFullYear()
@@ -18,12 +20,28 @@ function createDateFromKey(dateKey) {
   return new Date(year, month - 1, day)
 }
 
+function loadTodosFromLocalStorage() {
+  const savedTodos = localStorage.getItem(TODO_STORAGE_KEY)
+
+  if (savedTodos === null) {
+    return []
+  }
+
+  // 로컬스토리지에 저장된 JSON 문자열을 Todo 배열로 복원합니다.
+  return JSON.parse(savedTodos)
+}
+
 function App() {
-  const [todos, setTodos] = useState([])
+  const [todos, setTodos] = useState(loadTodosFromLocalStorage)
   const [editingTodoId, setEditingTodoId] = useState(null)
   const [validationMessage, setValidationMessage] = useState('')
   const [selectedFilter, setSelectedFilter] = useState('all')
   const [selectedDate, setSelectedDate] = useState(() => createDateKey(new Date()))
+
+  useEffect(() => {
+    // todos가 추가, 수정, 삭제, 완료 처리로 바뀔 때마다 JSON 문자열로 저장합니다.
+    localStorage.setItem(TODO_STORAGE_KEY, JSON.stringify(todos))
+  }, [todos])
 
   // 선택된 날짜를 먼저 맞춘 뒤, 선택된 상태 필터까지 적용한 Todo만 화면에 전달합니다.
   const filteredTodos = todos.filter((todo) => {
