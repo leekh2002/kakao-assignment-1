@@ -102,6 +102,15 @@ function App() {
     return Date.now()
   }
 
+  function clearValidationMessage() {
+    setValidationMessage('')
+  }
+
+  function resetTodoUiState() {
+    setEditingTodoId(null)
+    setValidationMessage('')
+  }
+
   function handleAddTodo(todoText) {
     const trimmedTodoText = todoText.trim()
 
@@ -119,19 +128,17 @@ function App() {
     }
 
     setTodos((currentTodos) => [...currentTodos, newTodo])
-    setEditingTodoId(null)
-    setValidationMessage('')
+    resetTodoUiState()
     return true
   }
 
   function handleStartEdit(todoId) {
     setEditingTodoId(todoId)
-    setValidationMessage('')
+    clearValidationMessage()
   }
 
   function handleCancelEdit() {
-    setEditingTodoId(null)
-    setValidationMessage('')
+    resetTodoUiState()
   }
 
   function handleUpdateTodo(todoId, nextTodoText) {
@@ -146,8 +153,7 @@ function App() {
     setTodos((currentTodos) =>
       currentTodos.map((todo) => (todo.id === todoId ? { ...todo, text: trimmedTodoText } : todo)),
     )
-    setEditingTodoId(null)
-    setValidationMessage('')
+    resetTodoUiState()
   }
 
   function handleToggleComplete(todoId) {
@@ -155,7 +161,7 @@ function App() {
     setTodos((currentTodos) =>
       currentTodos.map((todo) => (todo.id === todoId ? { ...todo, completed: !todo.completed } : todo)),
     )
-    setValidationMessage('')
+    clearValidationMessage()
   }
 
   function handleDeleteTodo(todoId) {
@@ -165,14 +171,13 @@ function App() {
       setEditingTodoId(null)
     }
 
-    setValidationMessage('')
+    clearValidationMessage()
   }
 
   function handleFilterChange(nextFilter) {
     // 필터를 바꾸면 선택한 상태의 Todo만 보이도록 상태를 갱신합니다.
     setSelectedFilter(nextFilter)
-    setEditingTodoId(null)
-    setValidationMessage('')
+    resetTodoUiState()
   }
 
   function handleMoveSelectedWeek(weekOffset) {
@@ -183,15 +188,13 @@ function App() {
 
       return createDateKey(nextDate)
     })
-    setEditingTodoId(null)
-    setValidationMessage('')
+    resetTodoUiState()
   }
 
   function handleSelectDate(nextSelectedDate) {
     // 주간 날짜 버튼을 클릭하면 해당 날짜의 Todo만 보이도록 선택 날짜를 바꿉니다.
     setSelectedDate(nextSelectedDate)
-    setEditingTodoId(null)
-    setValidationMessage('')
+    resetTodoUiState()
   }
 
   return (
