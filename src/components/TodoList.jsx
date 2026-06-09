@@ -2,7 +2,11 @@ import TodoItem from './TodoItem'
 
 function TodoList({ todos, editingTodoId, onStartEdit, onCancelEdit, onUpdateTodo, onToggleComplete, onDeleteTodo }) {
   if (todos.length === 0) {
-    return <p className="rounded-lg border border-dashed border-violet-200 bg-violet-50/40 p-5 text-center text-zinc-500">등록된 Todo가 없습니다.</p>
+    return (
+      <p className="rounded-lg border border-dashed border-violet-200 bg-violet-50/40 p-5 text-center text-zinc-500">
+        표시할 Todo가 없습니다.
+      </p>
+    )
   }
 
   return (
