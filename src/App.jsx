@@ -1,16 +1,38 @@
 import { useState } from 'react'
+import TodoDateNavigation from './components/TodoDateNavigation'
 import TodoFilterTabs from './components/TodoFilterTabs'
 import TodoForm from './components/TodoForm'
 import TodoList from './components/TodoList'
+
+function createDateKey(date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+
+  return `${year}-${month}-${day}`
+}
+
+function createDateFromKey(dateKey) {
+  const [year, month, day] = dateKey.split('-').map(Number)
+
+  return new Date(year, month - 1, day)
+}
 
 function App() {
   const [todos, setTodos] = useState([])
   const [editingTodoId, setEditingTodoId] = useState(null)
   const [validationMessage, setValidationMessage] = useState('')
   const [selectedFilter, setSelectedFilter] = useState('all')
+  const [selectedDate, setSelectedDate] = useState(() => createDateKey(new Date()))
 
-  // 현재 선택한 필터 상태에 맞는 Todo만 화면에 전달합니다.
+  // 선택된 날짜를 먼저 맞춘 뒤, 선택된 상태 필터까지 적용한 Todo만 화면에 전달합니다.
   const filteredTodos = todos.filter((todo) => {
+    const isTodoOnSelectedDate = todo.date === selectedDate
+
+    if (!isTodoOnSelectedDate) {
+      return false
+    }
+
     if (selectedFilter === 'active') {
       return !todo.completed
     }
@@ -39,6 +61,7 @@ function App() {
       id: createTodoId(),
       text: trimmedTodoText,
       completed: false,
+      date: selectedDate,
     }
 
     setTodos((currentTodos) => [...currentTodos, newTodo])
@@ -98,6 +121,18 @@ function App() {
     setValidationMessage('')
   }
 
+  function handleMoveSelectedDate(dayOffset) {
+    // 현재 선택된 날짜에 일 단위 offset을 더해 이전/다음 날짜로 이동합니다.
+    setSelectedDate((currentSelectedDate) => {
+      const nextDate = createDateFromKey(currentSelectedDate)
+      nextDate.setDate(nextDate.getDate() + dayOffset)
+
+      return createDateKey(nextDate)
+    })
+    setEditingTodoId(null)
+    setValidationMessage('')
+  }
+
   return (
     <main className="flex min-h-screen items-start justify-center bg-slate-50 px-5 py-14 text-zinc-900 max-sm:px-3.5 max-sm:py-7">
       <section
@@ -110,6 +145,8 @@ function App() {
             Todo App
           </h1>
         </header>
+
+        <TodoDateNavigation selectedDate={selectedDate} onMoveSelectedDate={handleMoveSelectedDate} />
 
         <TodoForm onAddTodo={handleAddTodo} validationMessage={validationMessage} />
 
